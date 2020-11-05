@@ -1,2 +1,2 @@
-# in_situ_genome_sequencing_analysis
- Code to reproduce in situ genome sequencing analyses
+# In situ genome sequencing analysis
+ Code to reproduce analyses from Payne, Chiang, Reginato et al., In situ genome sequencing resolves DNA sequence and structure in intact biological samples
