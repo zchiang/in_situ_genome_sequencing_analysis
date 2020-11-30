@@ -17,6 +17,7 @@ from scipy.spatial import distance
 from scipy.interpolate import griddata
 from matplotlib.patches import Rectangle 
 
+
 def init_empty_matrix(bins):
     """ Helper function to generate a matrix of empty lists
     
@@ -35,6 +36,7 @@ def init_empty_matrix(bins):
             A[i].append([np.nan])
 
     return(A)
+
 
 def flatten_matrix(A, func = np.nanmean):
     """ Helper function to flatten a matrix of lists
@@ -58,6 +60,7 @@ def flatten_matrix(A, func = np.nanmean):
                 A_flat[i][j] = func(A[i][j])
             
     return A_flat
+
 
 def get_bin_sizes(resolution, genome="hg38"):
     """
@@ -89,6 +92,7 @@ def get_bin_sizes(resolution, genome="hg38"):
 
     return bin_sizes_chr
 
+
 def get_B_vector(cn,resolution,
                  sizes=const.SIZES_HG38):
     """
@@ -112,10 +116,11 @@ def get_B_vector(cn,resolution,
     
     return B
 
+
 def get_cdist(c1, c2, genome = "hg38"):
     """
     Helper function to compute the pairwise spatial distance between two
-    clusters (single chromosome copy).
+    clusters (i.e. single chromosome copies).
     
     Params:
     -------
@@ -145,11 +150,11 @@ def get_cdist(c1, c2, genome = "hg38"):
     P1 = np.array(c1[KEYS["pos"]].values)
     P2 = np.array(c2[KEYS["pos"]].values)
 
-
     #Compute the pairwise distances
     R_cdist = distance.cdist(R1,R2)
 
     return (R_cdist, P1, P2)
+
 
 def populate_tile(GM, cni, cnj, ci, cj, resolution):
     """
@@ -258,6 +263,7 @@ def make_genome_wide_matrix(cells,
 
     return GM
 
+
 def draw_genome_wide_matrix(A,
                             xlabel = "\nGenomic Coordinate [Mb]",
                             clabel = '\nSpatial Distance [um]',
@@ -291,7 +297,7 @@ def draw_genome_wide_matrix(A,
     sum_sizes = np.cumsum(bin_sizes_chr)
 
     clim = get_clims([A],q) #clim = qth and 1-qth percentile values
-    clim = (0,clim[1])#startl linear scale at 0
+    clim = (0,clim[1])#start linear scale at 0
     
     #Draw outline around chromosome territories
     for i in range(2, chr_count+1):
@@ -345,27 +351,27 @@ def draw_genome_wide_matrix(A,
     return fig, ax
 
     
-
 def make_distance_matrix(cluster,
                          resolution = 2.5*10**6,
                          statistic = np.nanmean,
                          flatten = True,
                          genome = "mm10"):
-    """ Function to generate a distance matrix from a chromosome cluster
+    """ 
+    Function to generate a distance matrix from a chromosome cluster.
     
     Params:
     -------
         cluster: pandas dataframe with chromosome cluster information
         resolution: matrix resolution in base pairs
-        statistic: function implementing desired distance metrix
+        statistic: function implementing desired distance matrix
         flatten: If true, apply the distance function, 
                  if false, return matrix with variable length 
         genome: human or mouse genome, string
 
     Returns:
     --------
-
-    A: matrix of empty lists of resolution equal to bins """
+        A: distance matrix as defined by the statistic
+    """
 
     chr_num = cluster["chr"].unique()[0]
 
@@ -406,6 +412,7 @@ def make_distance_matrix(cluster,
     
     return A
 
+
 def make_ensemble_matrix(data, chr_num,
                          resolution = 2.5*10**6,
                          statistic=np.nanmean,
@@ -417,7 +424,7 @@ def make_ensemble_matrix(data, chr_num,
     
     Params:
     -------
-         data: the dataframe(must be prefiltered on stage, parent, and chr)
+         data: the dataframe (must be prefiltered on stage, parent, and chr)
          chr_num: desired chromosome number for ensemble distance
          resolution: matrix resolution in base pairs
          statistic: function to get distance metric 
@@ -443,11 +450,11 @@ def make_ensemble_matrix(data, chr_num,
     chr_size = SIZES[chr_num]
     num_bins = int(np.ceil(chr_size/resolution))
 
-    #Make the marix
+    #Make the ensemble matrix by concatenating all the single cell matrices
     A_ensemble = init_empty_matrix(num_bins)
     for cluster in clusters:
         A = make_distance_matrix(cluster, resolution=resolution, flatten=False)
-        for i in range(len(A)):
+        for i in range(len(A)): 
             for j in range(len(A)):
                 A_ensemble[i][j] = np.concatenate((A_ensemble[i][j],A[i][j]))
 
@@ -464,7 +471,7 @@ def check_coverage(A, chr_num, expected = 3):
     -------
         A: the 2D matrix
         expected: number of rows to ignore in the coverage calculation
-                (default of 2, to exclude centromeric/telomeric gaps)
+                (default of 3, to exclude centromeric/telomeric gaps)
     Returns:
     --------
 
@@ -477,6 +484,7 @@ def check_coverage(A, chr_num, expected = 3):
     coverage = 1 - (rows_missing - expected) / (len(A) - expected)
     
     return coverage
+
 
 def get_diag_lims(A):
     """
@@ -501,6 +509,7 @@ def get_diag_lims(A):
             break
     return li, ri
 
+
 def interpolate_missing(A):
     """
     Helper function to interpolate missing rows in a distance matrix while 
@@ -524,10 +533,11 @@ def interpolate_missing(A):
     valid_inds = np.nonzero(~np.isnan(diag))[0]
     diag[nan_inds] = np.interp(nan_inds, valid_inds, diag[valid_inds])
 
-    #interpolate diagonal nans except for those in missing rows
+    #interpolate diagonal nans except for those missing at edges
     for i in range(len(A)):
         if i >= li and i <= ri: A[i,i] = diag[i]
 
+    #Interpolate non-diagonal elements
     #attribution: Gilly
     #https://stackoverflow.com/questions/6518811/interpolate-nan-values-in-a-numpy-array
     x, y = np.indices(A.shape)
@@ -537,6 +547,7 @@ def interpolate_missing(A):
     A[np.isnan(A)] = griddata(points, values, xi, method='linear')
     
     return A
+
 
 def get_clims(matrices, q, round_to_int=True):
     """
@@ -562,6 +573,7 @@ def get_clims(matrices, q, round_to_int=True):
     
     return (lower, upper)
     
+
 def draw_scd_bars(axs, peaks):
     
     """
@@ -570,7 +582,7 @@ def draw_scd_bars(axs, peaks):
     
     Params:
     -------
-        axs: axes to draw on, first is the distance matrix and second is the scd bars
+        axs: axes to draw on, 1st is the distance matrix and 2nd is the scd bars
         peaks: locations of the scd boundary calls
         
     Returns:
@@ -594,7 +606,8 @@ def draw_scd_bars(axs, peaks):
         
     return axs
 
-def align_scd_bars(fig, axs ,cax, A, res):
+
+def align_scd_bars(fig, axs, cax, A, res):
   
     """
     Align SCD bars to a distance matrix.
@@ -602,14 +615,14 @@ def align_scd_bars(fig, axs ,cax, A, res):
     Params:
     -------
         fig: fig containing distance matrix and scd bars
-        axes: axes to draw on, 1st is the distance matrix and 2nd is the scd bars
+        axs: axes to draw on, 1st is the distance matrix and 2nd is the scd bars
         cax: distance matrix image
         A: raw distance matrix
         res: resolution of the matrix, in megabases
         
     Returns:
     --------
-        fig, axs: fig and ax with colorbars aligned to matrix
+        fig, axs: colorbars aligned to matrix
     """
     
     axs[1].set_xlim(0,len(A)*res)
@@ -632,13 +645,14 @@ def align_scd_bars(fig, axs ,cax, A, res):
     
     return fig, axs
 
+
 def draw_distance_mat(fig, ax, A, res, clim,
                      chr_num = 11,
                      cmap_str = 'seismic_r',
                      nancolor = 'grey'):
     
     """
-        Draw a distance matrix formatted for display in a figure.
+    Draw a distance matrix formatted for display in a figure.
     
     Params:
     -------

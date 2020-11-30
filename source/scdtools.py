@@ -69,12 +69,9 @@ def cohens_d(d1,d2):
         d: cohen's d for the two distributions
     """
         
-    mean1 = np.mean(d1)
-    mean2 = np.mean(d2)
-    var1 = np.var(d1,ddof=1)
-    var2 = np.var(d2,ddof=1)
-    n1 = len(d1)
-    n2 = len(d2)
+    mean1, mean2 = np.mean(d1), np.mean(d2)
+    var1, var2 = np.var(d1,ddof=1), np.var(d2,ddof=1)
+    n1,n2 = len(d1), len(d2)
     
     s_pooled = np.sqrt((var1*(n1-1)+var2*(n2-1))/(n1+n2-2))
     
@@ -90,17 +87,15 @@ def sliding_window_dist(A, ws):
            
     Params:
     -------
-    
         A: The distance matrix.
         ws: The size of the sliding window, in pixels.
 
     Returns:
     --------
-
         dists: The vector of insulation scores along the diagonal of the distance 
                matrix.
-
     """
+    
     dists = np.zeros(len(A))
     for i in range(len(A)):
         #must consider at least half of window
@@ -129,9 +124,11 @@ def sliding_window_dist(A, ws):
 
         #calculate insulation score, here we use a score analagous to a
         #reflection coefficient, as in Su et al. 2020
-        normed_insulation = (np.nanmean(intra_dist) - np.nanmean(inter_dist)) / (np.nanmean(intra_dist) + np.nanmean(inter_dist))
+        ins_diff = np.nanmean(intra_dist) - np.nanmean(inter_dist)
+        ins_sum = np.nanmean(intra_dist) + np.nanean(inter_dist)
+        insulation_score = ins_diff/ins_sum
 
-        dists[i] = normed_insulation
+        dists[i] = insulation_score
         
     return dists
 
@@ -187,7 +184,6 @@ def get_scd_peaks(A, ws=5, distance=3, prominence=0.05, make_plots=False):
     Returns:
     --------
         peaks: a list of peaks corresponding to bins in the input matrix
-
     """
                   
     #get insulation score at each coordinate
@@ -198,20 +194,7 @@ def get_scd_peaks(A, ws=5, distance=3, prominence=0.05, make_plots=False):
 
     #correct at edges
     peaks = handle_edges(peaks,A)
-    
-    if make_plots==True:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        x = np.arange(0, len(M))
-        ax.plot(x, dists)
-        ax.scatter(peaks,dists[peaks], c='red')
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        cax = ax.matshow(M,interpolation='nearest',cmap='seismic_r') 
-        ax.plot(peaks, peaks, linestyle="", marker = 'o', color='black')   
-            
+   
     return peaks, dists
 
 
@@ -227,9 +210,8 @@ def get_scd_sizes(matrices):
     Returns:
     --------
         sizes: array of distances between pairs of SCD boundaries
-
     """
-    
+   
     sizes = []
     #get the sizes
     for i in range(len(matrices)):
@@ -257,7 +239,6 @@ def draw_sizes_plot(sizes,res,bins,title):
     Returns:
     --------
         fig, ax: the figure and axes for histogram
-
     """
 
     fig, ax = plt.subplots()
@@ -298,7 +279,8 @@ def get_boundary_strengths(data, matrices, num_chrs):
         E = mt.make_ensemble_matrix(data, i) #ensemble distance matrix
         peaks, dists = get_scd_peaks(E) #boundary indices and ins. scores
         dists = dists*-1 #express more insulated boundaries as positive
-        #get the boundary strengths; do not consider the edge peaks which are
+
+        #Get the boundary strengths; do not consider the edge peaks which are
         #included in the peaks vector for convenience only
         ensemble_strengths.extend(dists[peaks[1:-1]])
         
@@ -306,7 +288,8 @@ def get_boundary_strengths(data, matrices, num_chrs):
     for A in matrices:
         peaks, dists = get_scd_peaks(A) #boundary indices and ins. scores
         dists = dists*-1 #express more insulated boundaries as positive
-        #get the boundary strengths; do not consider the edge peaks which are
+
+        #Get the boundary strengths; do not consider the edge peaks which are
         #included in the peaks vector for convenience only
         sc_strengths.extend(dists[peaks[1:-1]])
 
@@ -344,6 +327,7 @@ def draw_strengths_plot(sc_strengths, ensemble_strengths, title):
     ax.set_ylabel("Boundary strength")
 
     return fig, ax
+
 
 def draw_scd_ensemble_subplot(Ms, Cs, res):
     """
@@ -423,7 +407,6 @@ def get_scaled_dists(peaks, P, L, resolution, num_scaled_bins):
     
     scaled_dists: vector of bins, each bin contains a read attributes 
                   (e.g. lamin distance) at those scaled positions. 
-
     """
 
     #Bins to scale positions of reads b/w two SCD peaks.
@@ -532,7 +515,6 @@ def mirror_distance_vector(scd_scaled_dists):
     Returns:
     --------
         mirrored: binned list of scaled scd distance on [0,0.5]
-
     """
     
     interval = len(scd_scaled_dists)//2 #assumes even number of bins

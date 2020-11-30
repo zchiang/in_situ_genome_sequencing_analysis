@@ -1,8 +1,8 @@
 """
 comp.py
 
-A collection of functions used to manipulate and IGS data primarily with respect
-to comparisons with other expternal datasets.
+A collection of functions used to manipulate and analyze IGS data primarily with 
+respect to comparisons with other external datasets.
 
 """
 
@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle 
-
 
 
 def get_T(clusters, B, resolution, threshold = 0.5):
@@ -24,13 +23,14 @@ def get_T(clusters, B, resolution, threshold = 0.5):
         clusters: single chromosome copies, dataframe
         B: bin vector at target resolution
         resolution: target resolution in basepairs
-        threshold: threshold for contact in microns
+        threshold: proximity threshold for a read to be considered a contact, 
+                   in microns
     
     Returns:
     --------
         T: lamin contact probability for each bin
     """
-    lamin_tracks = []
+    lamin_tracks = [] #will hold lamin distances for a genomic track
     for i in range(len(B)): lamin_tracks.append([])
 
     #Get the lamin distances for each genomic bin
@@ -67,7 +67,8 @@ def get_T(clusters, B, resolution, threshold = 0.5):
 
 def draw_comp_plot(E, s_inds, e_inds, T, B, resolution, chr_num):
     """
-    Draw the plot comparing Hi-C Eig, DamID LAD, and IGS proximity.
+    Draw the plot comparing Hi-C eig, DamID LAD, and IGS proximity in three
+    vertically aligned subplots.
     
     Params:
     -------
@@ -120,7 +121,7 @@ def draw_comp_plot(E, s_inds, e_inds, T, B, resolution, chr_num):
                             labelleft=False)
 
     Ex = np.arange(0, len(E))
-    z = np.zeros(len(E))
+    z = np.zeros(len(E)) #for fill_between
     
     axs[hic_ax].plot(Ex,E, color='black',linewidth=1,alpha=0.5)
     axs[hic_ax].plot(Ex,z, color='black',linewidth=1)

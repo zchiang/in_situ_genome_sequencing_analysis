@@ -49,7 +49,7 @@ def get_genome_sizes(genome):
     
     Params:
     --------
-        genome: genome requested, string referring to assembly
+        genome: genome requested, string
     
     Returns:
     --------
@@ -69,7 +69,7 @@ def get_genome_keys(genome):
 
     Params:
     -------
-        genome: genome requested, string referring to assembly
+        genome: genome requested, string
     
     Returns:   
     --------
@@ -91,7 +91,8 @@ def get_genome_keys(genome):
                 'z':'z_um',
                 'pos': 'hg38_pos',
                 'chr': 'hg38_chr',
-                'cluster':'mle_cluster'
+                'cluster':'mle_cluster',
+                'dim':['x_um', 'y_um','z_um']
                 }
         
     else:

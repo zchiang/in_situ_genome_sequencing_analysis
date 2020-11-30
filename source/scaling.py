@@ -3,6 +3,7 @@ scaling.py
 
 A collection of functions used to manipulate and analyze IGS data primarily
 with respect to their scaling properties (e.g. genomic vs. spatial distance).
+
 """
 
 import warnings
@@ -107,16 +108,16 @@ def cell_cluster_helper(cell, genome="mm10"):
     
     Returns:
     --------
-        X_cell, P_cell: lists of spatial and genomic distances for the cell
+        R_cell, P_cell: lists of spatial and genomic distances for the cell
     """
     
-    X_cell, P_cell = [], []
+    R_cell, P_cell = [], []
     for cluster in cell:
-        X_pdist, P_pdist = get_pdists(cluster,genome)
-        X_cell.extend(X_pdist)
+        R_pdist, P_pdist = get_pdists(cluster,genome)
+        R_cell.extend(R_pdist)
         P_cell.extend(P_pdist)
     
-    return X_cell, P_cell 
+    return R_cell, P_cell 
 
 
 def get_pdists(cluster,genome="hg38"):
